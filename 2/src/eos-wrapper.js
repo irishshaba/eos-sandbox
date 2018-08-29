@@ -1,11 +1,13 @@
-const Eos = require("eosjs")
+const Eos = require('eosjs')
 
-const eos = Eos.Localnet();
+const eos = Eos.Localnet()
 
 class EosWrapper {
-    async getLatestBlock() {
-        return await eos.getBlock((await eos.getInfo({})).head_block_id)    
-    }
+  async getLatestBlock () {
+    let info = await eos.getInfo({})
+    let result = await eos.getBlock(info.head_block_id)
+    return result
+  }
 }
 
-module.exports = EosWrapper;
+module.exports = EosWrapper
