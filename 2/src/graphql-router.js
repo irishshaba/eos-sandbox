@@ -1,9 +1,11 @@
-const Eos = require("eosjs")
+const EosWrapper = require('./eos-wrapper');
 const graphqlHTTP = require('express-graphql');
-const { buildSchema } = require('graphql');
+const buildSchema = require('graphql');
 
 const express = require('express')
 const router = express.Router()
+
+var eos = new EosWrapper();
 
 var schema = buildSchema(`
     type BlockSummary {
@@ -16,18 +18,24 @@ var schema = buildSchema(`
     }
 `);
 
+class BlockSummary {
+    constructor(headId, transactionCount) {
+        this.blockId = headId
+        this.transactionCount = transactionCount
+    }
+}
+
 var root = {
     latest: async () => {
-        info = await eos.getInfo({})
-        result = await eos.getBlock(info.head_block_id)        
-        return new BlockSummary(result.id, result.input_transactions.length);
+        latest = await eos.getLatestBlock();
+        return new BlockSummary(latest.id, latest.input_transactions.length);
     },
 };
 
-router.use('/', graphqlHTTP({
+router.get('/graphql', graphqlHTTP({
     schema: schema,
     rootValue: root,
-    graphiql: false, // would it be cheating to just set this to true?
+    graphiql: false,
 }));
 
 module.exports = router;
